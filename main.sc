@@ -1,5 +1,6 @@
 using import String
 using import struct
+using import Rc
 
 import bottle
 
@@ -25,10 +26,11 @@ struct GameContext
     player : Player
 
 global game-context : GameContext
+global player-layer : (Rc InputLayer)
 
 @@ 'on bottle.load
 fn ()
-    player-layer := (bottle.input.register-layer "player-layer")
+    player-layer = (bottle.input.new-layer)
 
     # for a specific, instant action, a virtual button is the best approach.
     fn player-jump ()
@@ -67,9 +69,6 @@ fn ()
 
 @@ 'on bottle.update
 fn (dt)
-    player-layer :=
-        'force-unwrap (bottle.input.get-layer "player-layer")
-
     print ('button-down? player-layer "run")
 
 bottle.run;
