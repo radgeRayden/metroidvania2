@@ -34,9 +34,7 @@ def notdone(name):
     }
 
 def task_artifact():
-    return {
-
-    }
+    return notdone("artifact")
 
 
 def task_dist():
