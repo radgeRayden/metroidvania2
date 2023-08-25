@@ -1,0 +1,6 @@
+/tools/
+/licenses/
+/lib/
+/include/
+/__pycache__/
+/.doit.db
