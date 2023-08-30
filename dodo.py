@@ -34,8 +34,19 @@ def notdone(name):
     }
 
 def task_artifact():
-    return notdone("artifact")
+    return {
+        'actions': [cmd("rm -rf ./dist"), cmd("mkdir ./dist"), cmd("mkdir ./dist/obj"), cmd("mkdir ./dist/bin"),
+                    "scopes -e -m .build",
+                    "rm -r ./dist/obj",
+                    "cp -r game ./dist"],
+        'targets': ["./dist"],
+        'file_dep': [bottle_dep],
+        'uptodate': [False],
+    }
 
 
-def task_dist():
-    return notdone("dist")
+def task_push_itch():
+    return {
+        'actions': ["./tools/butler push ./dist radgerayden/gloopmancer:development"],
+        'file_dep': ["./dist"],
+    }
