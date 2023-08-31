@@ -22,7 +22,7 @@ def task_update_bottle():
 
 def task_run_game():
     return {
-        'actions': [LongRunning(cmd("scopes -e -m .src.main"))],
+        'actions': [LongRunning(cmd("scopes -e -m .src.main ./game"))],
         'uptodate': [False],
         'file_dep': [bottle_dep]
     }
