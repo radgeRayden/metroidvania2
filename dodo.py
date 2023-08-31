@@ -39,7 +39,7 @@ def task_artifact():
                     "scopes -e -m .build",
                     "rm -r ./dist/obj",
                     "cp -r game ./dist"],
-        'targets': ["./dist"],
+        'targets': ["./dist/bin/game"],
         'file_dep': [bottle_dep],
         'uptodate': [False],
     }
@@ -47,6 +47,6 @@ def task_artifact():
 
 def task_push_itch():
     return {
-        'actions': ["./tools/butler push ./dist radgerayden/gloopmancer:development"],
-        'file_dep': ["./dist"],
+        'actions': [f"./tools/butler push ./dist radgerayden/gloopmancer:development-{platform.system()}"],
+        'file_dep': ["./dist/bin/game"],
     }
