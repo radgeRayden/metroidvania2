@@ -47,8 +47,6 @@ inline decode-struct (sT object)
 
 inline parse-typed (T source)
     json-object := cJSON.ParseWithLength source (countof source)
-    print
-        'from-rawstring String (cJSON.Print json-object)
     result := decode-struct T json-object
     cJSON.Delete json-object
     result
