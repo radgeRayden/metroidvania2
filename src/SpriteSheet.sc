@@ -1,4 +1,4 @@
-using import Array struct
+using import Array String struct
 
 struct AseRect plain
     x : i32
