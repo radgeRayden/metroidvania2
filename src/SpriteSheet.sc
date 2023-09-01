@@ -34,7 +34,7 @@ struct AseMetadata
     image : String
     format : String
     size : AseSize
-    scale : f32
+    scale : String
     frameTags : (Array AseAnimationTag)
     layers : (Array AseLayer)
 
