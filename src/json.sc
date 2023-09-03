@@ -1,6 +1,36 @@
 using import Array Map String print
 import cJSON
 
+fn tolower (str)
+    using import String
+
+    delta := char"a" - char"A"
+    local result : String
+    for c in str
+        if (c >= char"A" and c <= char"Z")
+            'append result (c + delta)
+        else
+            'append result c
+    result
+
+inline match-string-enum (enum-type value)
+    using import hash
+    using import switcher
+    using import print
+
+    call
+        switcher sw
+            va-map
+                inline (fT)
+                    fT := field.Type
+                    k := keyof fT
+                    case (static-eval (hash (tolower (k as string))))
+                        getattr enum-type k
+                enum-type.__fields__
+            default
+                raise;
+        hash (tolower value)
+
 inline check-type (item checkf)
     if (not (checkf item))
         raise false
@@ -32,6 +62,10 @@ inline decode-value (vT item)
     elseif ((vT < Struct) or (vT < CStruct))
         check-type item cJSON.IsObject
         decode-struct vT item
+    elseif (vT < CEnum)
+        check-type item cJSON.IsString
+        match-string-enum vT
+            'from-rawstring String (cJSON.GetStringValue item)
     else (raise false)
 
 inline decode-struct (sT object)
