@@ -66,6 +66,11 @@ inline decode-value (vT item)
         check-type item cJSON.IsString
         match-string-enum vT
             'from-rawstring String (cJSON.GetStringValue item)
+    elseif (vT < Option)
+        if (cJSON.IsNull item)
+            (vT)
+        else
+            vT (this-function vT.Type item)
     else (raise false)
 
 inline decode-struct (sT object)
