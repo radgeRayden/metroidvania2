@@ -13,7 +13,7 @@ fn tolower (str)
             'append result c
     result
 
-inline match-string-enum (enum-type value)
+inline match-string-enum (enum-type value f)
     using import hash
     using import switcher
     using import print
@@ -25,7 +25,7 @@ inline match-string-enum (enum-type value)
                     fT := field.Type
                     k := keyof fT
                     case (static-eval (hash (tolower (k as string))))
-                        getattr enum-type k
+                        f k
                 enum-type.__fields__
             default
                 raise;
@@ -37,7 +37,7 @@ inline check-type (item checkf)
 
 inline decode-struct
 
-inline decode-value (vT item)
+inline decode-value (vT item ...)
     if (cJSON.IsInvalid item)
         raise false
 
@@ -66,6 +66,10 @@ inline decode-value (vT item)
         check-type item cJSON.IsString
         match-string-enum vT
             'from-rawstring String (cJSON.GetStringValue item)
+            inline (k v)
+                getattr enum-type k
+    elseif (vT < Enum)
+
     elseif (vT < Option)
         if (cJSON.IsNull item)
             (vT)
@@ -73,23 +77,26 @@ inline decode-value (vT item)
             vT (this-function vT.Type item)
     else (raise false)
 
+fn get-object-item (object key)
+    cJSON.GetObjectItem object key
+
 inline decode-struct (sT object)
     sT.__typecall sT
         va-map
             inline (field)
                 fT := field.Type
                 k T := keyof fT, unqualified fT
-                try (decode-value T (cJSON.GetObjectItem object (static-eval (k as string))))
+                try (decode-value T (get-object-item object (static-eval (k as string))))
                 then (value) value
                 else (T)
             sT.__fields__
 
-inline parse-typed (T source)
+inline parse-decode (T source)
     json-object := cJSON.ParseWithLength source (countof source)
     result := decode-struct T json-object
     cJSON.Delete json-object
     result
 
 do
-    let parse-typed
+    let parse-decode decode-value get-object-item
     local-scope;
