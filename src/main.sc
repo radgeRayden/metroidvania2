@@ -4,7 +4,7 @@ using import radl.version-string radl.strfmt
 import bottle
 using bottle.enums
 
-VERSION := (git-version)
+VERSION := (git-version) as string
 run-stage;
 
 global root-dir : (Option String)
