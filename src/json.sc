@@ -136,6 +136,19 @@ enum JSONValue
             this-type.Null;
         else (assert false)
 
+    inline... @ (self, k : SCString)
+        dispatch self
+        case Object (obj)
+            'getdefault obj k (this-type.Null)
+        default (this-type.Null)
+    case (self, idx : integer)
+        dispatch self
+        case Array (arr)
+            if ((idx >= 0) and (idx < (countof arr)))
+                deref (arr @ idx)
+            else (this-type.Null)
+        default (this-type.Null)
+
 fn parse-generic (source)
     json-object := cJSON.ParseWithLength source (countof source)
     result := JSONValue.from-item json-object
