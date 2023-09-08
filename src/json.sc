@@ -1,4 +1,4 @@
-using import Array enum Map Option String print
+using import Array enum Map Option Rc String print
 import cJSON
 
 fn tolower (str)
@@ -96,8 +96,12 @@ inline parse-as-struct (T source)
     result
 
 enum JSONValue
-JSONObject := (Map String JSONValue)
-JSONArray := (Array JSONValue)
+JSONObject := (Map String (Rc JSONValue))
+JSONArray := (Array (Rc JSONValue))
+
+type+ (Rc JSONValue)
+    inline __printer (self print)
+        print (self as JSONValue)
 
 SCString := String
 enum JSONValue
@@ -139,8 +143,8 @@ enum JSONValue
     inline... @ (self, k : SCString)
         dispatch self
         case Object (obj)
-            'getdefault obj k (this-type.Null)
-        default (this-type.Null)
+            copy ('getdefault obj k (Rc.wrap (this-type.Null)))
+        default (Rc.wrap (this-type.Null))
     case (self, idx : integer)
         dispatch self
         case Array (arr)
@@ -149,6 +153,29 @@ enum JSONValue
             else (this-type.Null)
         default (this-type.Null)
 
+    inline as (self T)
+        inline force-convert-enum (tag default)
+            'apply self
+                inline (tagT value)
+                    static-if (tagT == tag)
+                        copy value
+                    else
+                        raise;
+
+        (Option T)
+            try
+                static-if (T == SCString)
+                    force-convert-enum this-type.String
+                elseif (T == bool)
+                    force-convert-enum this-type.Bool
+                elseif ((T < real) or (T < integer))
+                    (force-convert-enum this-type.Number) as T
+                else none
+            else none
+
+    inline as! (self T)
+        'force-unwrap ('as self T)
+
 fn parse-generic (source)
     json-object := cJSON.ParseWithLength source (countof source)
     result := JSONValue.from-item json-object
@@ -156,5 +183,6 @@ fn parse-generic (source)
     result
 
 do
-    let parse-as-struct parse-generic decode-value get-object-item
+    let parse-as-struct parse-generic decode-value get-object-item \
+        JSONValue JSONObject JSONArray
     local-scope;
