@@ -89,12 +89,59 @@ inline decode-struct (sT object)
                 else (T)
             sT.__fields__
 
-inline parse-decode (T source)
+inline parse-as-struct (T source)
     json-object := cJSON.ParseWithLength source (countof source)
     result := decode-struct T json-object
     cJSON.Delete json-object
     result
 
+enum JSONValue
+JSONObject := (Map String JSONValue)
+JSONArray := (Array JSONValue)
+
+SCString := String
+enum JSONValue
+    Object : JSONObject
+    Array : JSONArray
+    Number : f64
+    Bool : bool
+    String : SCString
+    Null
+
+    fn from-item (item)
+        returning this-type
+        if (cJSON.IsObject item)
+            local map : JSONObject
+            loop (element = item.child)
+                if (element == null)
+                    break;
+                'set map ('from-rawstring SCString element.string) (this-function element)
+                element.next
+            this-type.Object map
+        elseif (cJSON.IsArray item)
+            local arr : JSONArray
+            loop (element = item.child)
+                if (element == null)
+                    break;
+                'append arr (this-function element)
+                element.next
+            this-type.Array arr
+        elseif (cJSON.IsNumber item)
+            this-type.Number (cJSON.GetNumberValue item)
+        elseif (cJSON.IsBool item)
+            this-type.Bool (not cJSON.IsFalse item)
+        elseif (cJSON.IsString item)
+            this-type.String ('from-rawstring SCString (cJSON.GetStringValue item))
+        elseif (cJSON.IsNull item)
+            this-type.Null;
+        else (assert false)
+
+fn parse-generic (source)
+    json-object := cJSON.ParseWithLength source (countof source)
+    result := JSONValue.from-item json-object
+    cJSON.Delete json-object
+    result
+
 do
-    let parse-decode decode-value get-object-item
+    let parse-as-struct parse-generic decode-value get-object-item
     local-scope;
