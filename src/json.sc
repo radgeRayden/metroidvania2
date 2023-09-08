@@ -1,4 +1,4 @@
-using import Array Map String print
+using import Array enum Map Option String print
 import cJSON
 
 fn tolower (str)
@@ -21,7 +21,7 @@ inline match-string-enum (enum-type value f)
     call
         switcher sw
             va-map
-                inline (fT)
+                inline (field)
                     fT := field.Type
                     k := keyof fT
                     case (static-eval (hash (tolower (k as string))))
@@ -67,9 +67,7 @@ inline decode-value (vT item ...)
         match-string-enum vT
             'from-rawstring String (cJSON.GetStringValue item)
             inline (k v)
-                getattr enum-type k
-    elseif (vT < Enum)
-
+                getattr vT k
     elseif (vT < Option)
         if (cJSON.IsNull item)
             (vT)
