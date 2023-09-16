@@ -12,6 +12,7 @@ using import .CollisionWorld
 global world : CollisionWorld
 global player-collider : usize
 global player-vel : vec2
+global colliding? : bool
 
 global root-dir : (Option String)
 @@ 'on bottle.configure
@@ -33,8 +34,9 @@ fn ()
     # lets make up a level for testing
     w-tiles := 800 // 32
     for i in (range w-tiles)
-        'add world
-            Collider (vec2 (i * 32 + 16) 16) (CollisionShape.AABB (vec2 16))
+        if (i % 2 == 0)
+            'add world
+                Collider (vec2 (i * 32 + 16) 16) (CollisionShape.AABB (vec2 16))
 
     player-collider =
         'add world (Collider (vec2 100 100) (CollisionShape.AABB (vec2 16)))
@@ -61,7 +63,7 @@ fn (key)
 
 @@ 'on bottle.update
 fn (dt)
-    'move world player-collider (player-vel * 200 * (f32 dt))
+    colliding? = 'move world player-collider (player-vel * 200 * (f32 dt))
 
 @@ 'on bottle.render
 fn ()
@@ -74,6 +76,9 @@ fn ()
         case AABB (half-size)
             plonk.rectangle-line v.position (half-size * 2)
         default (unreachable)
+
+    player-pos := 'get-position world player-collider
+    plonk.rectangle player-pos (vec2 32) (color = (colliding? (vec4 1 0 0 1) (vec4 1)))
 
 fn main (argc argv)
     if (argc > 1)
