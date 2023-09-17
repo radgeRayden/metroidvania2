@@ -13,8 +13,15 @@ do
     fn AABB-AABB (a-pos a-hs b-pos b-hs)
         collision? := & (unpack ((abs (b-pos - a-pos)) <= (a-hs + b-hs)))
 
-    fn AABB-Circle (a-pos a-hs b-pos b-radius)
-        false
+    fn AABB-Circle (aabb-pos aabb-hs circle-pos radius)
+        # https://stackoverflow.com/a/1879223
+        # Find the closest point to the circle within the rectangle
+        closest-point := clamp circle-pos (aabb-pos - aabb-hs) (aabb-pos + aabb-hs)
+        # Calculate the distance between the circle's center and this closest point
+        dv := circle-pos - closest-point
+        dist2 := dv.x ** 2 + dv.y ** 2
+        # If the distance is less than the circle's radius, an intersection occurs
+        dist2 <= radius ** 2
 
     Circle-AABB := (a b c d) -> (AABB-Circle c d a b)
 

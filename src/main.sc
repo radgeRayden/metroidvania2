@@ -10,9 +10,11 @@ run-stage;
 using import .CollisionWorld
 
 global world : CollisionWorld
-global player-collider : usize
 global player-vel : vec2
+global player-collider : usize
 global colliding? : bool
+global player2-collider : usize
+global colliding2? : bool
 
 global root-dir : (Option String)
 @@ 'on bottle.configure
@@ -39,7 +41,9 @@ fn ()
                 Collider (vec2 (i * 32 + 16) 16) (CollisionShape.AABB (vec2 16))
 
     player-collider =
-        'add world (Collider (vec2 100 100) (CollisionShape.AABB (vec2 16)))
+        'add world (Collider (vec2 110 100) (CollisionShape.Circle 16))
+    player2-collider =
+        'add world (Collider (vec2 300 100) (CollisionShape.AABB (vec2 16)))
 
     # spawn entities
 
@@ -63,11 +67,18 @@ fn (key)
 
 @@ 'on bottle.update
 fn (dt)
-    colliding? = 'move world player-collider (player-vel * 200 * (f32 dt))
+    colliding? = 'move world player-collider (player-vel * 80 * (f32 dt))
+    colliding2? = 'move world player2-collider (player-vel * 80 * (f32 dt))
 
 @@ 'on bottle.render
 fn ()
     from bottle let plonk
+
+    player-pos := 'get-position world player-collider
+    plonk.circle player-pos 16.0 (color = (colliding? (vec4 1 0 0 1) (vec4 1)))
+
+    player2-pos := 'get-position world player2-collider
+    plonk.rectangle player2-pos (vec2 32) (color = (colliding2? (vec4 1 0 0 1) (vec4 1)))
 
     for k v in world.objects
         dispatch v.shape
@@ -76,9 +87,6 @@ fn ()
         case AABB (half-size)
             plonk.rectangle-line v.position (half-size * 2)
         default (unreachable)
-
-    player-pos := 'get-position world player-collider
-    plonk.rectangle player-pos (vec2 32) (color = (colliding? (vec4 1 0 0 1) (vec4 1)))
 
 fn main (argc argv)
     if (argc > 1)
