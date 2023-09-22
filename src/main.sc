@@ -11,9 +11,9 @@ using import .CollisionWorld
 
 global world : CollisionWorld
 global player-vel : vec2
-global player-collider : usize
+global player-collider : ColliderId
 global colliding? : bool
-global player2-collider : usize
+global player2-collider : ColliderId
 global colliding2? : bool
 
 global root-dir : (Option String)
@@ -67,8 +67,8 @@ fn (key)
 
 @@ 'on bottle.update
 fn (dt)
-    colliding? = 'move world player-collider (player-vel * 80 * (f32 dt))
-    colliding2? = 'move world player2-collider (player-vel * 80 * (f32 dt))
+    colliding? = 'move world player-collider (player-vel * 80 * (f32 dt)) null
+    colliding2? = 'move world player2-collider (player-vel * 80 * (f32 dt)) null
 
 @@ 'on bottle.render
 fn ()
