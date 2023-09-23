@@ -29,7 +29,7 @@ do
     fn AABB-AABB (a-pos a-hs b-pos b-hs)
         _
             & (unpack ((abs (b-pos - a-pos)) <= (a-hs + b-hs)))
-            (vec2)
+            (abs (b-hs - a-hs)) * (sign (b-pos - a-pos))
 
     fn AABB-Circle (aabb-pos aabb-hs circle-pos radius)
         # https://stackoverflow.com/a/1879223
@@ -41,16 +41,16 @@ do
         # If the distance is less than the circle's radius, an intersection occurs
         _
             dist2 <= radius ** 2
-            (vec2)
+            dv - (((dv != (vec2)) and (normalize dv) or (vec2)) * radius)
 
-    Circle-AABB := (a b c d) -> (AABB-Circle c d a b)
+    Circle-AABB := (a b c d) -> (do (c? v := (AABB-Circle c d a b)) (c?, -v))
 
     fn Circle-Circle (a-pos a-radius b-pos b-radius)
         dv := b-pos - a-pos
         dist2 := dv.x ** 2 + dv.y ** 2
         _
             dist2 <= (a-radius + b-radius) ** 2
-            b-radius - a-radius
+            (normalize dv) * (abs (b-radius - a-radius))
 
     local-scope;
 
@@ -59,7 +59,7 @@ struct CollisionData
     passive-object : ColliderId
     penetration : vec2
 
-typedef CollisionResolutionCallback <<: (pointer (function vec2 CollisionData))
+CollisionResolutionCallback := @ (function vec2 (viewof CollisionData))
 
 @@ memo
 inline get-test-function (shapeA shapeB)
@@ -116,6 +116,7 @@ struct CollisionWorld
             copy object.position
         else
             vec2;
+
 do
     let CollisionShape Collider ColliderId CollisionWorld
     local-scope;
