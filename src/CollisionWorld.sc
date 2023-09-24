@@ -27,21 +27,27 @@ inline mag-squared (v)
 vvv bind collision-tests
 do
     fn AABB-AABB (a-pos a-hs b-pos b-hs)
+        dv := b-pos - a-pos
         _
             & (unpack ((abs (b-pos - a-pos)) <= (a-hs + b-hs)))
-            (abs (b-hs - a-hs)) * (sign (b-pos - a-pos))
+            # dv
+            a-hs + b-hs + (- (b-pos - a-pos))
 
     fn AABB-Circle (aabb-pos aabb-hs circle-pos radius)
         # https://stackoverflow.com/a/1879223
         # Find the closest point to the circle within the rectangle
         closest-point := clamp circle-pos (aabb-pos - aabb-hs) (aabb-pos + aabb-hs)
-        # Calculate the distance between the circle's center and this closest point
+        # Calculate the distance between the circle's center and this closest point (manhattan distance)
         dv := circle-pos - closest-point
         dist2 := dv.x ** 2 + dv.y ** 2
         # If the distance is less than the circle's radius, an intersection occurs
         _
             dist2 <= radius ** 2
-            dv - (((dv != (vec2)) and (normalize dv) or (vec2)) * radius)
+            closest-point - aabb-pos
+            # if (dist2 > 0)
+            #     (normalize dv) * (radius - (length dv))
+            # else
+            #     (radius - (length (circle-pos - aabb-pos)))
 
     Circle-AABB := (a b c d) -> (do (c? v := (AABB-Circle c d a b)) (c?, -v))
 
@@ -50,7 +56,7 @@ do
         dist2 := dv.x ** 2 + dv.y ** 2
         _
             dist2 <= (a-radius + b-radius) ** 2
-            (normalize dv) * (abs (b-radius - a-radius))
+            ((a-radius + b-radius) - (length dv)) * (normalize dv)
 
     local-scope;
 
@@ -117,6 +123,11 @@ struct CollisionWorld
         else
             vec2;
 
+    fn center-distance (self a b)
+        ap bp := 'get-position self a, 'get-position self b
+        b - a
+
+    fn contact-point (self a b)
 do
     let CollisionShape Collider ColliderId CollisionWorld
     local-scope;
