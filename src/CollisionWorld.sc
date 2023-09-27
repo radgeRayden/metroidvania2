@@ -26,12 +26,19 @@ inline mag-squared (v)
 
 vvv bind collision-tests
 do
-    fn AABB-AABB (a-pos a-hs b-pos b-hs)
-        dv := b-pos - a-pos
+    fn AABB-AABB (p1 s1 p2 s2)
+        dv := p2 - p1
+        s := sign dv
+        c1 := clamp (p1 - s1) (p2 - s1) (p2 + s2)
+        c2 := clamp (p1 + s1) (p2 - s1) (p2 + s2)
+        ext := (c2 - c1)
+        p := ext * s
         _
-            & (unpack ((abs (b-pos - a-pos)) <= (a-hs + b-hs)))
-            # dv
-            a-hs + b-hs + (- (b-pos - a-pos))
+            & (unpack ((abs (p2 - p1)) <= (s1 + s2)))
+            if (ext.x > ext.y)
+                p.0y
+            else
+                p.x0
 
     fn AABB-Circle (aabb-pos aabb-hs circle-pos radius)
         # https://stackoverflow.com/a/1879223
@@ -43,11 +50,7 @@ do
         # If the distance is less than the circle's radius, an intersection occurs
         _
             dist2 <= radius ** 2
-            closest-point - aabb-pos
-            # if (dist2 > 0)
-            #     (normalize dv) * (radius - (length dv))
-            # else
-            #     (radius - (length (circle-pos - aabb-pos)))
+            (normalize dv) * (radius - (length dv))
 
     Circle-AABB := (a b c d) -> (do (c? v := (AABB-Circle c d a b)) (c?, -v))
 
@@ -63,7 +66,7 @@ do
 struct CollisionData
     active-object : ColliderId
     passive-object : ColliderId
-    penetration : vec2
+    msv : vec2
 
 CollisionResolutionCallback := @ (function vec2 (viewof CollisionData))
 
@@ -100,18 +103,18 @@ struct CollisionWorld
                                 inline (bT ...)
                                     b... := _ other.position (va-dekey ...)
                                     testf := get-test-function aT bT
-                                    collided? penetration := testf ((va-join a...) b...)
+                                    collided? msv := testf ((va-join a...) b...)
                                     if collided?
                                         'append self._collision-list
                                             CollisionData
                                                 active-object = copy id
                                                 passive-object = copy k
-                                                penetration = penetration
+                                                msv = msv
 
             'sort self._collision-list ((x) -> (mag-squared x.penetration))
             collided? := copy ((countof self._collision-list) > 0)
-            for collision in self._collision-list
-                cb collision
+            if collided?
+                object.position += cb (self._collision-list @ 0)
             'clear self._collision-list
             collided?
         else false

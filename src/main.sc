@@ -43,7 +43,7 @@ fn ()
                 Collider (vec2 (i * 64 + 32) 32) (CollisionShape.Circle 32)
         else
             'add world
-                Collider (vec2 (i * 64 + 32) 32) (CollisionShape.AABB (vec2 16))
+                Collider (vec2 (i * 64 + 32) 320) (CollisionShape.AABB (vec2 16))
 
     player-collider =
         'add world (Collider (vec2 110 100) (CollisionShape.Circle 16))
@@ -85,12 +85,12 @@ fn (dt)
     speed := 50
     colliding? = 'move world player-collider (player-vel * speed * (f32 dt))
         fn (data)
-            pv1 = data.penetration
-            (vec2)
+            pv1 = data.msv
+            -pv1
     colliding2? = 'move world player2-collider (player-vel * speed * (f32 dt))
         fn (data)
-            pv2 = data.penetration
-            (vec2)
+            pv2 = data.msv
+            -pv2
 
 @@ 'on bottle.render
 fn ()
