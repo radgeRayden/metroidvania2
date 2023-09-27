@@ -41,9 +41,8 @@ fn ()
         if (i % 2 == 0)
             'add world
                 Collider (vec2 (i * 64 + 32) 32) (CollisionShape.Circle 32)
-        else
-            'add world
-                Collider (vec2 (i * 64 + 32) 320) (CollisionShape.AABB (vec2 16))
+        'add world
+            Collider (vec2 (i * 32 + 16) 320) (CollisionShape.AABB (vec2 16))
 
     player-collider =
         'add world (Collider (vec2 110 100) (CollisionShape.Circle 16))
@@ -59,38 +58,34 @@ fn (key)
     elseif ((key == KeyboardKey.Return) and (bottle.keyboard.down? KeyboardKey.LAlt))
         bottle.window.toggle-fullscreen;
     elseif (key == KeyboardKey.Down)
-        player-vel = vec2 0 -1
+        player-vel += vec2 0 -1
     elseif (key == KeyboardKey.Up)
-        player-vel = vec2 0 1
+        player-vel += vec2 0 1
     elseif (key == KeyboardKey.Left)
-        player-vel = vec2 -1 0
+        player-vel += vec2 -1 0
     elseif (key == KeyboardKey.Right)
-        player-vel = vec2 1 0
+        player-vel += vec2 1 0
 
 @@ 'on bottle.key-released
 fn (key)
     if (key == KeyboardKey.Up)
-        player-vel = (vec2)
+        player-vel -= (vec2 0 1)
     elseif (key == KeyboardKey.Down)
-        player-vel = (vec2)
+        player-vel -= (vec2 0 -1)
     elseif (key == KeyboardKey.Left)
-        player-vel = (vec2)
+        player-vel -= (vec2 -1 0)
     elseif (key == KeyboardKey.Right)
-        player-vel = (vec2)
+        player-vel -= (vec2 1 0)
 
 global pv1 : vec2
 global pv2 : vec2
 @@ 'on bottle.update
 fn (dt)
     speed := 50
+    for k obj in world.objects
+        obj.index = 0
     colliding? = 'move world player-collider (player-vel * speed * (f32 dt))
-        fn (data)
-            pv1 = data.msv
-            -pv1
     colliding2? = 'move world player2-collider (player-vel * speed * (f32 dt))
-        fn (data)
-            pv2 = data.msv
-            -pv2
 
 @@ 'on bottle.render
 fn ()
@@ -111,11 +106,20 @@ fn ()
     plonk.line verts2
 
     for k v in world.objects
+        let color =
+            switch v.index
+            case 1 (vec4 1 0 0 1)
+            case 2 (vec4 0 0 1 1)
+            case 3 (vec4 0 1 0 1)
+            default (vec4 1)
         dispatch v.shape
         case Circle (radius)
+            if (v.index > 0)
+                plonk.circle v.position radius (color = color)
             plonk.circle-line v.position radius
-            plonk.line
         case AABB (half-size)
+            if (v.index > 0)
+                plonk.rectangle v.position (half-size * 2) (color = color)
             plonk.rectangle-line v.position (half-size * 2)
         default (unreachable)
 
